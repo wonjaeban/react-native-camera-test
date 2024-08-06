@@ -39,6 +39,14 @@
 	<string></string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
+	<key>NSCameraUsageDescription</key>
+	<string>We need to access camera for recording your interviews.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>We need to access microphone for recording your interviews.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>We need to access photo library for adding recorded interviews.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>We need to access photo library for checking recorded interviews.</string>
 	<key>UIRequiredDeviceCapabilities</key>
 	<array>
 		<string>armv7</string>
