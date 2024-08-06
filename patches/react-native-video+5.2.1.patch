@@ -1,0 +1,293 @@
+diff --git a/node_modules/react-native-video/android/src/main/java/com/brentvatne/react/ReactVideoView.java b/node_modules/react-native-video/android/src/main/java/com/brentvatne/react/ReactVideoView.java
+index f3f5fe7..252a7ba 100644
+--- a/node_modules/react-native-video/android/src/main/java/com/brentvatne/react/ReactVideoView.java
++++ b/node_modules/react-native-video/android/src/main/java/com/brentvatne/react/ReactVideoView.java
+@@ -44,14 +44,14 @@ import javax.annotation.Nullable;
+ 
+ @SuppressLint("ViewConstructor")
+ public class ReactVideoView extends ScalableVideoView implements
+-    MediaPlayer.OnPreparedListener,
+-    MediaPlayer.OnErrorListener,
+-    MediaPlayer.OnBufferingUpdateListener,
+-    MediaPlayer.OnSeekCompleteListener,
+-    MediaPlayer.OnCompletionListener,
+-    MediaPlayer.OnInfoListener,
+-    LifecycleEventListener,
+-    MediaController.MediaPlayerControl {
++        MediaPlayer.OnPreparedListener,
++        MediaPlayer.OnErrorListener,
++        MediaPlayer.OnBufferingUpdateListener,
++        MediaPlayer.OnSeekCompleteListener,
++        MediaPlayer.OnCompletionListener,
++        MediaPlayer.OnInfoListener,
++        LifecycleEventListener,
++        MediaController.MediaPlayerControl {
+ 
+     public enum Events {
+         EVENT_LOAD_START("onVideoLoadStart"),
+@@ -137,7 +137,8 @@ public class ReactVideoView extends ScalableVideoView implements
+     private int mMainVer = 0;
+     private int mPatchVer = 0;
+ 
+-    private boolean mMediaPlayerValid = false; // True if mMediaPlayer is in prepared, started, paused or completed state.
++    private boolean mMediaPlayerValid = false; // True if mMediaPlayer is in prepared, started, paused or completed
++                                               // state.
+ 
+     private int mVideoDuration = 0;
+     private int mVideoBufferedDuration = 0;
+@@ -161,7 +162,7 @@ public class ReactVideoView extends ScalableVideoView implements
+                 if (mMediaPlayerValid && !isCompleted && !mPaused && !mBackgroundPaused) {
+                     WritableMap event = Arguments.createMap();
+                     event.putDouble(EVENT_PROP_CURRENT_TIME, mMediaPlayer.getCurrentPosition() / 1000.0);
+-                    event.putDouble(EVENT_PROP_PLAYABLE_DURATION, mVideoBufferedDuration / 1000.0); //TODO:mBufferUpdateRunnable
++                    event.putDouble(EVENT_PROP_PLAYABLE_DURATION, mVideoBufferedDuration / 1000.0); // TODO:mBufferUpdateRunnable
+                     event.putDouble(EVENT_PROP_SEEKABLE_DURATION, mVideoDuration / 1000.0);
+                     mEventEmitter.receiveEvent(getId(), Events.EVENT_PROGRESS.toString(), event);
+ 
+@@ -231,10 +232,10 @@ public class ReactVideoView extends ScalableVideoView implements
+     }
+ 
+     public void cleanupMediaPlayerResources() {
+-        if ( mediaController != null ) {
++        if (mediaController != null) {
+             mediaController.hide();
+         }
+-        if ( mMediaPlayer != null ) {
++        if (mMediaPlayer != null) {
+             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                 mMediaPlayer.setOnTimedMetaDataAvailableListener(null);
+             }
+@@ -250,11 +251,13 @@ public class ReactVideoView extends ScalableVideoView implements
+         }
+     }
+ 
+-    public void setSrc(final String uriString, final String type, final boolean isNetwork, final boolean isAsset, final ReadableMap requestHeaders) {
++    public void setSrc(final String uriString, final String type, final boolean isNetwork, final boolean isAsset,
++            final ReadableMap requestHeaders) {
+         setSrc(uriString, type, isNetwork, isAsset, requestHeaders, 0, 0);
+     }
+ 
+-    public void setSrc(final String uriString, final String type, final boolean isNetwork, final boolean isAsset, final ReadableMap requestHeaders, final int expansionMainVersion, final int expansionPatchVersion) {
++    public void setSrc(final String uriString, final String type, final boolean isNetwork, final boolean isAsset,
++            final ReadableMap requestHeaders, final int expansionMainVersion, final int expansionPatchVersion) {
+ 
+         mSrcUriString = uriString;
+         mSrcType = type;
+@@ -264,7 +267,6 @@ public class ReactVideoView extends ScalableVideoView implements
+         mMainVer = expansionMainVersion;
+         mPatchVer = expansionPatchVersion;
+ 
+-
+         mMediaPlayerValid = false;
+         mVideoDuration = 0;
+         mVideoBufferedDuration = 0;
+@@ -293,8 +295,10 @@ public class ReactVideoView extends ScalableVideoView implements
+                     headers.putAll(toStringMap(mRequestHeaders));
+                 }
+ 
+-                /* According to https://github.com/react-native-community/react-native-video/pull/537
+-                 *   there is an issue with this where it can cause a IOException.
++                /*
++                 * According to
++                 * https://github.com/react-native-community/react-native-video/pull/537
++                 * there is an issue with this where it can cause a IOException.
+                  * TODO: diagnose this exception and fix it
+                  */
+                 setDataSource(mThemedReactContext, parsedUrl, headers);
+@@ -306,35 +310,33 @@ public class ReactVideoView extends ScalableVideoView implements
+                     setDataSource(uriString);
+                 }
+             } else {
+-                ZipResourceFile expansionFile= null;
+-                AssetFileDescriptor fd= null;
+-                if(mMainVer>0) {
++                ZipResourceFile expansionFile = null;
++                AssetFileDescriptor fd = null;
++                if (mMainVer > 0) {
+                     try {
+-                        expansionFile = APKExpansionSupport.getAPKExpansionZipFile(mThemedReactContext, mMainVer, mPatchVer);
+-                        fd = expansionFile.getAssetFileDescriptor(uriString.replace(".mp4","") + ".mp4");
++                        expansionFile = APKExpansionSupport.getAPKExpansionZipFile(mThemedReactContext, mMainVer,
++                                mPatchVer);
++                        fd = expansionFile.getAssetFileDescriptor(uriString.replace(".mp4", "") + ".mp4");
+                     } catch (IOException e) {
+                         e.printStackTrace();
+                     } catch (NullPointerException e) {
+                         e.printStackTrace();
+                     }
+                 }
+-                if(fd==null) {
++                if (fd == null) {
+                     int identifier = mThemedReactContext.getResources().getIdentifier(
+-                        uriString,
+-                        "drawable",
+-                        mThemedReactContext.getPackageName()
+-                    );
++                            uriString,
++                            "drawable",
++                            mThemedReactContext.getPackageName());
+                     if (identifier == 0) {
+                         identifier = mThemedReactContext.getResources().getIdentifier(
+-                            uriString,
+-                            "raw",
+-                            mThemedReactContext.getPackageName()
+-                        );
++                                uriString,
++                                "raw",
++                                mThemedReactContext.getPackageName());
+                     }
+                     setRawData(identifier);
+-                }
+-                else {
+-                    setDataSource(fd.getFileDescriptor(), fd.getStartOffset(),fd.getLength());
++                } else {
++                    setDataSource(fd.getFileDescriptor(), fd.getStartOffset(), fd.getLength());
+                 }
+             }
+         } catch (Exception e) {
+@@ -351,9 +353,9 @@ public class ReactVideoView extends ScalableVideoView implements
+         src.putString(ReactVideoViewManager.PROP_SRC_TYPE, type);
+         src.putMap(ReactVideoViewManager.PROP_SRC_HEADERS, wRequestHeaders);
+         src.putBoolean(ReactVideoViewManager.PROP_SRC_IS_NETWORK, isNetwork);
+-        if(mMainVer>0) {
++        if (mMainVer > 0) {
+             src.putInt(ReactVideoViewManager.PROP_SRC_MAINVER, mMainVer);
+-            if(mPatchVer>0) {
++            if (mPatchVer > 0) {
+                 src.putInt(ReactVideoViewManager.PROP_SRC_PATCHVER, mPatchVer);
+             }
+         }
+@@ -363,9 +365,9 @@ public class ReactVideoView extends ScalableVideoView implements
+         isCompleted = false;
+ 
+         try {
+-          prepareAsync(this);
++            prepareAsync(this);
+         } catch (Exception e) {
+-          e.printStackTrace();
++            e.printStackTrace();
+         }
+     }
+ 
+@@ -421,7 +423,8 @@ public class ReactVideoView extends ScalableVideoView implements
+         return roundRelativeVolume.floatValue();
+     }
+ 
+-    public void setPreventsDisplaySleepDuringVideoPlaybackModifier(final boolean preventsDisplaySleepDuringVideoPlayback) {
++    public void setPreventsDisplaySleepDuringVideoPlaybackModifier(
++            final boolean preventsDisplaySleepDuringVideoPlayback) {
+         mPreventsDisplaySleepDuringVideoPlayback = preventsDisplaySleepDuringVideoPlayback;
+ 
+         if (!mMediaPlayerValid) {
+@@ -473,8 +476,11 @@ public class ReactVideoView extends ScalableVideoView implements
+         if (mMediaPlayerValid) {
+             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                 if (!mPaused) { // Applying the rate while paused will cause the video to start
+-                    /* Per https://stackoverflow.com/questions/39442522/setplaybackparams-causes-illegalstateexception
+-                     * Some devices throw an IllegalStateException if you set the rate without first calling reset()
++                    /*
++                     * Per https://stackoverflow.com/questions/39442522/setplaybackparams-causes-
++                     * illegalstateexception
++                     * Some devices throw an IllegalStateException if you set the rate without first
++                     * calling reset()
+                      * TODO: Call reset() then reinitialize the player
+                      */
+                     try {
+@@ -485,7 +491,8 @@ public class ReactVideoView extends ScalableVideoView implements
+                     }
+                 }
+             } else {
+-                Log.e(ReactVideoViewManager.REACT_CLASS, "Setting playback rate is not yet supported on Android versions below 6.0");
++                Log.e(ReactVideoViewManager.REACT_CLASS,
++                        "Setting playback rate is not yet supported on Android versions below 6.0");
+             }
+         }
+     }
+@@ -637,7 +644,12 @@ public class ReactVideoView extends ScalableVideoView implements
+     public void seekTo(int msec) {
+         if (mMediaPlayerValid) {
+             mSeekTime = msec;
+-            super.seekTo(msec);
++
++            // HHH: 비디오플레이어 seekTo 함수 기본 오버라이딩이 아닌 super.mMediaPlayer 사용도록 수정 ---
++            // - super.seekTo(msec);
++            super.mMediaPlayer.seekTo(msec, MediaPlayer.SEEK_CLOSEST);
++            // HHH: 비디오플레이어 seekTo 함수 기본 오버라이딩이 아닌 super.mMediaPlayer 사용도록 수정 ---
++
+             if (isCompleted && mVideoDuration != 0 && msec < mVideoDuration) {
+                 isCompleted = false;
+             }
+@@ -681,13 +693,12 @@ public class ReactVideoView extends ScalableVideoView implements
+     // This is not fully tested and does not work for all forms of timed metadata
+     @TargetApi(23) // 6.0
+     public class TimedMetaDataAvailableListener
+-            implements MediaPlayer.OnTimedMetaDataAvailableListener
+-    {
++            implements MediaPlayer.OnTimedMetaDataAvailableListener {
+         public void onTimedMetaDataAvailable(MediaPlayer mp, TimedMetaData data) {
+             WritableMap event = Arguments.createMap();
+ 
+             try {
+-                String rawMeta  = new String(data.getMetaData(), "UTF-8");
++                String rawMeta = new String(data.getMetaData(), "UTF-8");
+                 WritableMap id3 = Arguments.createMap();
+ 
+                 id3.putString(EVENT_PROP_METADATA_VALUE, rawMeta.substring(rawMeta.lastIndexOf("\u0003") + 1));
+@@ -718,10 +729,9 @@ public class ReactVideoView extends ScalableVideoView implements
+     protected void onAttachedToWindow() {
+         super.onAttachedToWindow();
+ 
+-        if(mMainVer>0) {
++        if (mMainVer > 0) {
+             setSrc(mSrcUriString, mSrcType, mSrcIsNetwork, mSrcIsAsset, mRequestHeaders, mMainVer, mPatchVer);
+-        }
+-        else {
++        } else {
+             setSrc(mSrcUriString, mSrcType, mSrcIsNetwork, mSrcIsAsset, mRequestHeaders);
+         }
+         setKeepScreenOn(mPreventsDisplaySleepDuringVideoPlayback);
+@@ -730,9 +740,11 @@ public class ReactVideoView extends ScalableVideoView implements
+     @Override
+     public void onHostPause() {
+         if (mMediaPlayerValid && !mPaused && !mPlayInBackground) {
+-            /* Pause the video in background
+-             * Don't update the paused prop, developers should be able to update it on background
+-             *  so that when you return to the app the video is paused
++            /*
++             * Pause the video in background
++             * Don't update the paused prop, developers should be able to update it on
++             * background
++             * so that when you return to the app the video is paused
+              */
+             mBackgroundPaused = true;
+             mMediaPlayer.pause();
+@@ -762,7 +774,8 @@ public class ReactVideoView extends ScalableVideoView implements
+      *
+      * @param readableMap The ReadableMap to be conveted.
+      * @return A HashMap containing the data that was in the ReadableMap.
+-     * @see 'Adapted from https://github.com/artemyarulin/react-native-eval/blob/master/android/src/main/java/com/evaluator/react/ConversionUtil.java'
++     * @see 'Adapted from
++     *      https://github.com/artemyarulin/react-native-eval/blob/master/android/src/main/java/com/evaluator/react/ConversionUtil.java'
+      */
+     public static Map<String, String> toStringMap(@Nullable ReadableMap readableMap) {
+         Map<String, String> result = new HashMap<>();
+@@ -783,7 +796,8 @@ public class ReactVideoView extends ScalableVideoView implements
+         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+             return;
+         }
+-        try { // It's possible this could throw an exception if the framework doesn't support getting track info
++        try { // It's possible this could throw an exception if the framework doesn't support
++              // getting track info
+             MediaPlayer.TrackInfo[] trackInfo = mp.getTrackInfo();
+             for (int i = 0; i < trackInfo.length; ++i) {
+                 if (trackInfo[i].getTrackType() == MediaPlayer.TrackInfo.MEDIA_TRACK_TYPE_TIMEDTEXT) {
+@@ -791,6 +805,7 @@ public class ReactVideoView extends ScalableVideoView implements
+                     break;
+                 }
+             }
+-        } catch (Exception e) {}
++        } catch (Exception e) {
++        }
+     }
+ }
+\ No newline at end of file

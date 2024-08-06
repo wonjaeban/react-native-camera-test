@@ -1,0 +1,62 @@
+#
+# A fatal error has been detected by the Java Runtime Environment:
+#
+#  EXCEPTION_ACCESS_VIOLATION (0xc0000005) at pc=0x00007ffca873c1df, pid=28704, tid=32320
+#
+# JRE version: OpenJDK Runtime Environment (11.0.2+9) (build 11.0.2+9)
+# Java VM: OpenJDK 64-Bit Server VM (11.0.2+9, mixed mode, tiered, compressed oops, g1 gc, windows-amd64)
+# Problematic frame:
+# V  [jvm.dll+0x61c1df]
+#
+# No core dump will be written. Minidumps are not enabled by default on client versions of Windows
+#
+# If you would like to submit a bug report, please visit:
+#   http://bugreport.java.com/bugreport/crash.jsp
+#
+
+---------------  S U M M A R Y ------------
+
+Command Line: -XX:MaxMetaspaceSize=512m --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.invoke=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.prefs/java.util.prefs=ALL-UNNAMED --add-opens=java.prefs/java.util.prefs=ALL-UNNAMED --add-opens=java.base/java.nio.charset=ALL-UNNAMED --add-opens=java.base/java.net=ALL-UNNAMED --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED -Xmx2048m -Dfile.encoding=x-windows-949 -Duser.country=KR -Duser.language=ko -Duser.variant org.gradle.launcher.daemon.bootstrap.GradleDaemon 7.5.1
+
+Host: 11th Gen Intel(R) Core(TM) i7-11700 @ 2.50GHz, 16 cores, 15G,  Windows 10 , 64 bit Build 19041 (10.0.19041.4597)
+Time: Mon Aug  5 11:51:04 2024 대한민국 표준시 elapsed time: 1165 seconds (0d 0h 19m 25s)
+
+---------------  T H R E A D  ---------------
+
+Current thread (0x0000018b79035800):  JavaThread "Unconstrained build operations Thread 72" [_thread_in_vm, id=32320, stack(0x00000048baa00000,0x00000048bab00000)]
+
+Stack: [0x00000048baa00000,0x00000048bab00000],  sp=0x00000048baafe9f0,  free space=1018k
+Native frames: (J=compiled Java code, j=interpreted, Vv=VM code, C=native code)
+V  [jvm.dll+0x61c1df]
+V  [jvm.dll+0x7069ca]
+V  [jvm.dll+0x42653a]
+C  0x0000018b61927693
+
+Java frames: (J=compiled Java code, j=interpreted, Vv=VM code)
+J 2255  java.lang.Object.notifyAll()V java.base@11.0.2 (0 bytes) @ 0x0000018b619275fb [0x0000018b619275c0+0x000000000000003b]
+J 7605 c1 org.gradle.internal.resources.DefaultResourceLockCoordinationService.maybeNotifyStateChange(Lorg/gradle/internal/resources/DefaultResourceLockCoordinationService$DefaultResourceLockState;)V (94 bytes) @ 0x0000018b5b27b6ac [0x0000018b5b27b340+0x000000000000036c]
+J 10187 c1 org.gradle.internal.resources.DefaultResourceLockCoordinationService.withStateLock(Lorg/gradle/api/Transformer;)Z (269 bytes) @ 0x0000018b5b7e2bd4 [0x0000018b5b7e1b80+0x0000000000001054]
+j  org.gradle.internal.work.DefaultWorkerLeaseService.releaseLocks(Ljava/lang/Iterable;)V+8
+j  org.gradle.internal.work.DefaultWorkerLeaseService.withLocks(Ljava/util/Collection;Lorg/gradle/internal/Factory;)Ljava/lang/Object;+37
+j  org.gradle.internal.work.DefaultWorkerLeaseService.runAsWorkerThread(Lorg/gradle/internal/Factory;)Ljava/lang/Object;+33
+j  org.gradle.internal.operations.DefaultBuildOperationQueue$WorkerRunnable.runBatch(Lorg/gradle/internal/operations/BuildOperation;)V+18
+j  org.gradle.internal.operations.DefaultBuildOperationQueue$WorkerRunnable.run()V+11
+J 5775 c1 org.gradle.internal.concurrent.ManagedExecutorImpl$1.run()V (57 bytes) @ 0x0000018b5b03addc [0x0000018b5b03ab60+0x000000000000027c]
+j  java.util.concurrent.ThreadPoolExecutor.runWorker(Ljava/util/concurrent/ThreadPoolExecutor$Worker;)V+92 java.base@11.0.2
+j  java.util.concurrent.ThreadPoolExecutor$Worker.run()V+5 java.base@11.0.2
+j  java.lang.Thread.run()V+11 java.base@11.0.2
+v  ~StubRoutines::call_stub
+
+siginfo: EXCEPTION_ACCESS_VIOLATION (0xc0000005), writing address 0x00000048b23fe6e8
+
+
+Register to memory mapping:
+
+RIP=0x00007ffca873c1df jvm.dll
+RAX=0x00000048bc4feb90 is pointing into the stack for thread: 0x0000018b73277000
+RBX=0x00000048becfe7b0 is pointing into the stack for thread: 0x0000018b72d5b800
+RCX=0x00000048b23fe6e0 is pointing into the stack for thread: 0x0000018b78d44000
+RDX=0x0000018b71a96554 points into unknown readable memory: 01 00 00 00
+RSP=0x00000048baafe9f0 is pointing into the stack for thread: 0x0000018b79035800
+RBP=0x0 is NULL
+RSI=
