@@ -1,145 +1,114 @@
-import React, {useState, useEffect, useRef, useCallback} from 'react';
-import {
-  View,
-  Text,
-  Button,
-  PermissionsAndroid,
-  Platform,
-  FlatList,
-  Image,
-  TouchableOpacity,
-} from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Button, Text, FlatList, Alert } from 'react-native';
+import { RNCamera } from 'react-native-camera';
 import CameraRoll from '@react-native-community/cameraroll';
-import {RNCamera} from 'react-native-camera';
-import RNFS from 'react-native-fs';
+import * as MediaLibrary from 'expo-media-library';
 
 const App = () => {
-  const [media, setMedia] = useState([]);
-  const cameraRef = useRef(null);
+  const [hasPermission, setHasPermission] = useState(null);
+  const [cameraRef, setCameraRef] = useState(null);
+  const [videos, setVideos] = useState([]);
+  const [isRecording, setIsRecording] = useState(false);
 
   useEffect(() => {
-    requestPermission();
+    requestPermissions();
+    loadVideos();
   }, []);
 
-  const requestPermission = async () => {
-    if (Platform.OS === 'android') {
-      const granted = await PermissionsAndroid.requestMultiple([
-        PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
-        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-        PermissionsAndroid.PERMISSIONS.CAMERA,
-      ]);
+  const requestPermissions = async () => {
+    const { status: mediaStatus } = await MediaLibrary.requestPermissionsAsync();
 
-      if (
-        granted['android.permission.READ_EXTERNAL_STORAGE'] ===
-          PermissionsAndroid.RESULTS.GRANTED &&
-        granted['android.permission.WRITE_EXTERNAL_STORAGE'] ===
-          PermissionsAndroid.RESULTS.GRANTED &&
-        granted['android.permission.CAMERA'] ===
-          PermissionsAndroid.RESULTS.GRANTED
-      ) {
-        console.log('You can use the storage and camera');
-      } else {
-        console.log('Permission denied');
-      }
+    if (mediaStatus === 'granted') {
+      setHasPermission(true);
+    } else {
+      Alert.alert('Permissions required', 'Media library permission is required!');
     }
   };
 
-  const takeVideo = async maxDuration => {
+  const loadVideos = async () => {
     try {
-      if (!cameraRef.current) {
-        throw Error('카메라가 준비되지 않아 녹화를 진행할 수 없습니다.');
-      }
-
-      const recordData = await cameraRef.current.recordAsync({
-        mute: false,
-        videoBitrate: 300 * 1000, // 300Kbps
-        quality: RNCamera.Constants.VideoQuality['480p'],
-        maxDuration,
-        codec:
-          Platform.OS === 'ios'
-            ? RNCamera.Constants.VideoCodec.H264
-            : undefined,
-      });
-
-      if (!recordData) {
-        throw Error('기기의 녹화 기능에 이상이 있을 수 있습니다.');
-      }
-
-      saveToGallery(recordData.uri);
-      return recordData;
-    } catch (err) {
-      console.error('녹화 실패', err);
-      return null;
-    }
-  };
-
-  const saveToGallery = async uri => {
-    try {
-      const savedUri = await CameraRoll.save(uri, {type: 'video'});
-      console.log('Saved to gallery:', savedUri);
-      loadMedia();
-    } catch (error) {
-      console.error('Error saving to gallery:', error);
-    }
-  };
-
-  const loadMedia = async () => {
-    try {
-      const mediaData = await CameraRoll.getPhotos({
+      const media = await MediaLibrary.getAssetsAsync({
         first: 1,
-        assetType: 'All',
+        mediaType: 'video',
       });
-      setMedia(mediaData.edges);
+      setVideos(media.assets);
     } catch (error) {
-      console.error('Error fetching media:', error);
+      console.error('Error loading videos:', error);
     }
   };
 
-  const deleteMediaFile = async uri => {
-    try {
-      const filePath = uri.replace('file://', '');
-      const result = await RNFS.exists(filePath);
-      if (result) {
-        await RNFS.unlink(filePath);
-        console.log('File deleted successfully');
-        loadMedia();
+  const recordVideo = async () => {
+    if (cameraRef) {
+      try {
+        setIsRecording(true);
+        const options = {
+          quality: RNCamera.Constants.VideoQuality['480p'],
+          maxDuration: 60, // 최대 녹화 시간 (초)
+        };
+        const video = await cameraRef.recordAsync(options);
+        const savedUri = await CameraRoll.save(video.uri, { type: 'video' });
+        Alert.alert('Recorded', 'Video has been recorded and saved to your gallery.');
+        loadVideos();
+      } catch (error) {
+        console.error('Error recording video:', error);
+      } finally {
+        setIsRecording(false);
       }
-    } catch (e) {
-      console.error('Error deleting media:', e);
     }
   };
+
+  const stopRecording = () => {
+    if (cameraRef && isRecording) {
+      cameraRef.stopRecording();
+    }
+  };
+
+  const deleteVideo = async (id) => {
+    try {
+      await MediaLibrary.deleteAssetsAsync([id]);
+      Alert.alert('Deleted', 'The video has been deleted.');
+      loadVideos();
+    } catch (error) {
+      console.error('Error deleting video:', error);
+      Alert.alert('Error', 'An error occurred while deleting the video.');
+    }
+  };
+
+  const renderItem = ({ item }) => (
+    <View style={{ marginVertical: 10 }}>
+      <Text>{item.filename}</Text>
+      <Button title="Delete Video" onPress={() => deleteVideo(item.id)} />
+    </View>
+  );
+
+  if (hasPermission === null) {
+    return <View />;
+  }
+  if (hasPermission === false) {
+    return <Text>No access to media library</Text>;
+  }
 
   return (
-    <View style={{flex: 1, padding: 20}}>
+    <View style={{ flex: 1, padding: 20 }}>
       <RNCamera
-        ref={cameraRef}
-        style={{flex: 1}}
+        ref={(ref) => setCameraRef(ref)}
+        style={{ flex: 1 }}
         type={RNCamera.Constants.Type.back}
         flashMode={RNCamera.Constants.FlashMode.off}
         captureAudio={true}
       />
-      <Button title="Record Video" onPress={() => takeVideo(10)} />
-      {/* 10초 동안 녹화 */}
-      <Button title="Load Gallery Media" onPress={loadMedia} />
-      <FlatList
-        data={media}
-        keyExtractor={item => item.node.image.uri}
-        renderItem={({item}) => (
-          <View style={{marginVertical: 10}}>
-            {item.node.type.startsWith('video') ? (
-              <Text>{item.node.image.uri}</Text>
-            ) : (
-              <Image
-                source={{uri: item.node.image.uri}}
-                style={{width: 100, height: 100}}
-              />
-            )}
-            <Button
-              title="Delete Media"
-              onPress={() => deleteMediaFile(item.node.image.uri)}
-            />
-          </View>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginVertical: 10 }}>
+        {isRecording ? (
+          <Button title="Stop Recording" onPress={stopRecording} />
+        ) : (
+          <Button title="Record Video" onPress={recordVideo} />
         )}
+        <Button title="Load Videos" onPress={loadVideos} />
+      </View>
+      <FlatList
+        data={videos}
+        keyExtractor={(item) => item.id}
+        renderItem={renderItem}
       />
     </View>
   );
